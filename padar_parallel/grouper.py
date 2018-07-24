@@ -1,5 +1,4 @@
-from functools import partial
-from padar_converter import mhealth
+from padar_converter.mhealth import dataset
 
 
 class Grouper:
@@ -14,41 +13,41 @@ class MHealthGrouper(Grouper):
     def pid_group(self):
         return self.get_group(
             lambda inputs: list(
-                map(mhealth.dataset.get_pid, inputs)
+                map(dataset.get_pid, inputs)
             )
         )
 
     def sid_group(self):
         return self.get_group(
             lambda inputs: list(
-                map(mhealth.dataset.get_sid, inputs)
+                map(dataset.get_sid, inputs)
             )
         )
 
     def annotator_group(self):
         return self.get_group(
             lambda inputs: list(
-                map(mhealth.dataset.get_sid, inputs)
+                map(dataset.get_sid, inputs)
             )
         )
 
     def sensor_type_group(self):
         return self.get_group(
             lambda inputs: list(
-                map(mhealth.dataset.get_sensor_type, inputs)
+                map(dataset.get_sensor_type, inputs)
             )
         )
 
     def file_type_group(self):
         return self.get_group(
             lambda inputs: list(
-                map(mhealth.dataset.get_file_type, inputs)
+                map(dataset.get_file_type, inputs)
             )
         )
 
     def data_type_group(self):
         return self.get_group(
             lambda inputs: list(
-                map(mhealth.dataset.get_data_type, inputs)
+                map(dataset.get_data_type, inputs)
             )
         )
