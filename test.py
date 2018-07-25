@@ -3,7 +3,7 @@ from dask import delayed
 import dask
 import numpy as np
 
-def count_rows(data):
+def count_total_rows(data, all_data):
 
     @delayed
     def load_data(data):
@@ -17,8 +17,7 @@ def count_rows(data):
     def count(data):
         return data.shape[0]
     
-    dfs = [load_data(d) for d in data]
-    df = concat_data(dfs)
+    df = load_data(data)
     return count(df)
 
 @delayed
@@ -27,7 +26,13 @@ def post_join_func(group):
 
 @delayed
 def final_join_func(groups):
-    return pd.DataFrame(groups)
+    result = pd.DataFrame(groups)
+    result = result.transpose()
+    result.columns = ['num_of_rows']
+    result.reset_index(inplace=True, drop=False)
+    index_cols = result['index'].str.split('-', 1, expand=True)
+    result = index_cols.join(result)
+    return result
 
 if __name__ == '__main__':
     import pprint
@@ -42,11 +47,10 @@ if __name__ == '__main__':
     groupby_obj = GroupBy(*input_files) \
         .split(grouper.pid_group(),
                grouper.sid_group(), ingroup_sortkey_func=dataset.get_file_timestamp) \
-        .pre_join(join_func=GroupBy.join_nothing) \
-        .apply(count_rows) \
+        .apply(count_total_rows) \
         .post_join(join_func=post_join_func) \
         .final_join(join_func=final_join_func)
     groupby_obj.visualize_workflow(filename='test.pdf')
     result = groupby_obj.compute(scheduler='processes').get_result()
-    # print(result)
+    print(result)
     # groupby_obj.print_groups()

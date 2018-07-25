@@ -54,15 +54,6 @@ class GroupBy:
 
         return self
 
-    def pre_join(self, join_func=None):
-        for group_name in self._groups:
-            if join_func is None:
-                self._groups[group_name] = GroupBy.join_nothing(
-                    self._groups[group_name])
-            else:
-                self._groups[group_name] = join_func(self._groups[group_name])
-        return self
-
     def post_join(self, join_func=None):
         for group_name in self._applied_groups:
             if join_func is not None:
@@ -122,20 +113,6 @@ class GroupBy:
             return wrapper_func
         return wrapper_windowing
 
-    @staticmethod
-    def join_all(data_inputs):
-        return [tuple(data_inputs)]
-
-    @staticmethod
-    def join_adjacent(data_inputs):
-        before_inputs = [None] + data_inputs[:-1]
-        after_inputs = data_inputs[1:] + [None]
-        return list(zip(before_inputs, data_inputs, after_inputs))
-
-    @staticmethod
-    def join_nothing(data_inputs):
-        return list(zip(data_inputs))
-
     def apply_by_window(self, func, st, et, interval, step, chunk_func, join_func, **kwargs):
         """
         Apply function to window chunks of each group's data input. Only
@@ -161,5 +138,5 @@ class GroupBy:
         """
 
         for group_name in self._groups:
-            self._applied_groups[group_name] = [func(group_item, **kwargs) for group_item in self._groups[group_name]]
+            self._applied_groups[group_name] = [func(group_item, self._groups[group_name], **kwargs) for group_item in self._groups[group_name]]
         return self
