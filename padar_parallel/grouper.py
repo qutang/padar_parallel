@@ -1,4 +1,5 @@
 from padar_converter.mhealth import dataset
+from functools import partial
 
 
 class Grouper:
@@ -14,6 +15,20 @@ class MHealthGrouper(Grouper):
         return self.get_group(
             lambda inputs: list(
                 map(dataset.get_pid, inputs)
+            )
+        )
+
+    def session_start_time(self):
+        return self.get_group(
+            lambda inputs: list(
+                map(partial(dataset.get_session_start_time, filepaths=inputs), inputs)
+            )
+        )
+
+    def session_stop_time(self):
+        return self.get_group(
+            lambda inputs: list(
+                map(partial(dataset.get_session_end_time, filepaths=inputs), inputs)
             )
         )
 
