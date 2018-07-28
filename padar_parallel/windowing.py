@@ -61,6 +61,8 @@ class MhealthWindowing:
                 start_windows, stop_windows = MhealthWindowing.get_segment_windows(
                     data['left_boundary'], data['right_boundary'], interval, step)
 
+                rest_metas = GroupBy.get_meta(data)
+
                 results = []
                 for start_window, stop_window in zip(start_windows, stop_windows):
 
@@ -70,7 +72,7 @@ class MhealthWindowing:
                     chunk_result = segment_func(
                         appended_data, start_window, stop_window)
 
-                    result = func(chunk_result, **kwargs)
+                    result = func(chunk_result, **rest_metas, **kwargs)
 
                     result = dataframe.append_times(
                         result, start_window, stop_window)
