@@ -111,6 +111,7 @@ class GroupBy:
         for zipped_group in zipped_groups:
             bundle_input = zipped_group[0]
             groups = zipped_group[1:]
+            groups = filter(lambda x: x is not None, groups)
             group_name = '-'.join(groups)
             if group_name in self._groups:
                 self._groups[group_name].append(bundle_input)

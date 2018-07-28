@@ -32,6 +32,21 @@ class MHealthGrouper(Grouper):
             )
         )
 
+    def get_init_placement_group(self, mapping_file):
+        return self.get_group(
+            lambda inputs: list(
+                map(partial(dataset.get_init_placement,
+                            mapping_file=mapping_file), inputs)
+            )
+        )
+
+    def auto_init_placement_group(self):
+        return self.get_group(
+            lambda inputs: list(
+                map(dataset.auto_init_placement, inputs)
+            )
+        )
+
     def sid_group(self):
         return self.get_group(
             lambda inputs: list(
