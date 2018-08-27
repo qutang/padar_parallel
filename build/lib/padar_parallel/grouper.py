@@ -21,16 +21,14 @@ class MHealthGrouper(Grouper):
     def session_start_time(self):
         return self.get_group(
             lambda inputs: list(
-                map(partial(dataset.get_session_start_time,
-                            filepaths=inputs), inputs)
+                map(partial(dataset.get_session_start_time, filepaths=inputs), inputs)
             )
         )
 
     def session_stop_time(self):
         return self.get_group(
             lambda inputs: list(
-                map(partial(dataset.get_session_end_time,
-                            filepaths=inputs), inputs)
+                map(partial(dataset.get_session_end_time, filepaths=inputs), inputs)
             )
         )
 

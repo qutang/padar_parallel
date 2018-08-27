@@ -31,8 +31,7 @@ class MhealthWindowing:
         if file_type == 'sensor':
             return dataframe.start_time(df), dataframe.end_time(df)
         elif file_type == 'annotation':
-            return dataframe.start_time(df, start_time_col=1), \
-                dataframe.end_time(df, stop_time_col=2)
+            return dataframe.start_time(df, start_time_col=1), dataframe.end_time(df, stop_time_col=2)
 
     def get_segment_windows(lbound, rbound, interval, step):
         start_windows = pd.date_range(
@@ -46,8 +45,7 @@ class MhealthWindowing:
         segment_func = MhealthWindowing.get_segment_func(file_type)
 
         def wrapper(func):
-            def groupby_windowing_func(data, all_data, interval, step,
-                                       **kwargs):
+            def groupby_windowing_func(data, all_data, interval, step, **kwargs):
 
                 original_data = GroupBy.get_data(data)
                 before_item, after_item = GroupBy.get_adjacent_item(
@@ -58,21 +56,17 @@ class MhealthWindowing:
                     original_data, file_type)
 
                 appended_data = dataframe.append_edges(
-                    original_data, before_df=before_data, after_df=None,
-                    duration=interval * 5)
+                    original_data, before_df=before_data, after_df=None, duration=interval * 5)
 
                 start_windows, stop_windows = MhealthWindowing.get_segment_windows(
-                    data['left_boundary'], data['right_boundary'],
-                    interval, step)
+                    data['left_boundary'], data['right_boundary'], interval, step)
 
                 rest_metas = GroupBy.get_meta(data)
 
                 results = []
-                for start_window, stop_window in \
-                        zip(start_windows, stop_windows):
+                for start_window, stop_window in zip(start_windows, stop_windows):
 
-                    if stop_window <= original_st or
-                    stop_window >= original_et:
+                    if stop_window <= original_st or stop_window >= original_et:
                         continue
 
                     chunk_result = segment_func(
@@ -95,9 +89,7 @@ class MhealthWindowing:
         load_func = MhealthWindowing.get_load_func(file_type)
 
         def wrapper(func):
-            def script_windowing_func(file, *,
-                                      before_file=None, lbound, rbound,
-                                      interval, step, **kwargs):
+            def script_windowing_func(file, *, before_file=None, lbound, rbound, interval, step, **kwargs):
 
                 original_data = load_func(file)
                 before_data = load_func(before_file)
@@ -112,11 +104,9 @@ class MhealthWindowing:
                     lbound, rbound, interval, step)
 
                 results = []
-                for start_window, stop_window in \
-                        zip(start_windows, stop_windows):
+                for start_window, stop_window in zip(start_windows, stop_windows):
 
-                    if stop_window <= original_st or
-                    stop_window >= original_et:
+                    if stop_window <= original_st or stop_window >= original_et:
                         continue
 
                     chunk_result = segment_func(

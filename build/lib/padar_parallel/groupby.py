@@ -14,8 +14,7 @@ import pprint
 import copy
 import pandas as pd
 from dask import delayed
-from dask.diagnostics import Profiler, ResourceProfiler, CacheProfiler,\
-    visualize
+from dask.diagnostics import Profiler, ResourceProfiler, CacheProfiler, visualize
 import dask
 import itertools
 from functools import reduce
@@ -166,9 +165,7 @@ class GroupBy:
 
     def compute(self, profiling=True, **kwargs):
         if profiling:
-            with Profiler() as self._prof, \
-                    ResourceProfiler(dt=0.25) as self._rprof, \
-                    CacheProfiler() as self._cprof:
+            with Profiler() as self._prof, ResourceProfiler(dt=0.25) as self._rprof, CacheProfiler() as self._cprof:
                 self._result = dask.compute(
                     self._joined_applied_groups, **kwargs)[0]
         else:
@@ -204,8 +201,7 @@ class GroupBy:
 
         for group_name in self._groups_in_apply:
             results = []
-            for index, group_item in \
-                    enumerate(self._groups_in_apply[group_name]):
+            for index, group_item in enumerate(self._groups_in_apply[group_name]):
                 group_item['index'] = index
                 result = func(
                     group_item, self._groups_in_apply[group_name], **kwargs)
@@ -234,11 +230,9 @@ class GroupByWindowing(GroupBy):
             return results
         for group_name in self._groups:
             self._groups_in_apply[group_name] = [apply_windowing_func(
-                group_item)
-                for group_item in self._groups_in_apply[group_name]]
+                group_item) for group_item in self._groups_in_apply[group_name]]
             self._groups_in_apply[group_name] = list(
-                reduce((lambda a, b: a + b),
-                       self._groups_in_apply[group_name]))
+                reduce((lambda a, b: a + b), self._groups_in_apply[group_name]))
         return self
 
     def _assign_to_groups(self, *groups):
@@ -263,7 +257,5 @@ class GroupByWindowing(GroupBy):
 
         for group_name in self._groups:
             self._groups_in_apply[group_name] = [(func(
-                group_item, self._groups[group_name], **kwargs),
-                group_item[1], group_item[2])
-                for group_item in self._groups_in_apply[group_name]]
+                group_item, self._groups[group_name], **kwargs), group_item[1], group_item[2]) for group_item in self._groups_in_apply[group_name]]
         return self
