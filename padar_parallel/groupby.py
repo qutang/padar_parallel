@@ -176,8 +176,8 @@ class GroupBy:
                 self._joined_applied_groups, **kwargs)[0]
         return self
 
-    def show_profiling(self):
-        visualize([self._prof, self._cprof, self._rprof])
+    def show_profiling(self, **kwargs):
+        visualize([self._prof, self._cprof, self._rprof], **kwargs)
         return self
 
     def visualize_workflow(self, **kwargs):

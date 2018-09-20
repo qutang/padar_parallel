@@ -71,8 +71,8 @@ class MhealthWindowing:
                 for start_window, stop_window in \
                         zip(start_windows, stop_windows):
 
-                    if stop_window <= original_st or
-                    stop_window >= original_et:
+                    if stop_window <= original_st or \
+                            stop_window >= original_et:
                         continue
 
                     chunk_result = segment_func(
@@ -115,8 +115,8 @@ class MhealthWindowing:
                 for start_window, stop_window in \
                         zip(start_windows, stop_windows):
 
-                    if stop_window <= original_st or
-                    stop_window >= original_et:
+                    if stop_window <= original_st or \
+                            stop_window >= original_et:
                         continue
 
                     chunk_result = segment_func(
