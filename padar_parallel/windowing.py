@@ -78,7 +78,7 @@ class MhealthWindowing:
                     chunk_result = segment_func(
                         appended_data, start_window, stop_window)
 
-                    result = func(chunk_result, **rest_metas, **kwargs)
+                    result = func(chunk_result, interval=interval, step=step, **rest_metas, **kwargs)
 
                     result = dataframe.append_times(
                         result, start_window, stop_window)
