@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='padar_parallel',
-    version='0.2.6',
+    version='0.2.7',
     packages=find_packages(),
     include_package_data=True,
     description='''Extension to do parallel computing on grouped chunks or files
