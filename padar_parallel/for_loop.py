@@ -5,16 +5,19 @@ import dask
 
 
 class ForLoop:
-    def __init__(self, func, merge_func, inputs, **kwargs):
+    def __init__(self, inputs, func, merge_func=None, **kwargs):
         results = []
         for data in inputs:
-            result = delayed(func)(data, **kwargs)
+            result = func(data, **kwargs)
             results.append(result)
-        self._result = delayed(merge_func)(results)
+        if merge_func is not None:
+            self._result = merge_func(results, **kwargs)
+        else:
+            self._result = results
 
-    def compute(self):
-        with Profiler() as prof, ResourceProfiler(dt=0.25) as rprof, CacheProfiler() as cprof, ProgressBar():
-            self._result = self._result.compute()
+    def compute(self, **kwargs):
+        with Profiler() as prof, ResourceProfiler(dt=0.25) as rprof, CacheProfiler() as cprof:
+            self._computed_result = dask.compute(self._result, **kwargs)[0]
             self._prof = prof
             self._rprof = rprof
             self._cprof = cprof
@@ -23,5 +26,8 @@ class ForLoop:
         visualize([self._prof, self._rprof, self._cprof],
                   file_path=output_filepath)
 
+    def show_workflow(self, output_filepath=None):
+        dask.visualize(self._result, filename=output_filepath)
+
     def get_result(self):
-        return self._result
+        return self._computed_result
