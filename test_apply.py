@@ -3,6 +3,7 @@ from dask import delayed
 import dask
 import numpy as np
 from padar_parallel.groupby import GroupBy
+from padar_parallel.join import join_as_dataframe
 
 
 def count_total_rows(data, all_data, **kwargs):
@@ -31,7 +32,7 @@ def sum_rows(group_items, **kwargs):
 
 
 @delayed
-def as_dataframe(groups):
+def as_dataframe(groups, group_types):
     groups = GroupBy.get_data_groups(groups)
     result = pd.DataFrame(groups)
     result = result.transpose()
@@ -50,7 +51,9 @@ if __name__ == '__main__':
     grouper = MHealthGrouper(input_files)
     groupby_obj = GroupBy(input_files) \
         .split(grouper.pid_group(),
-               grouper.sid_group(), ingroup_sortkey_func=lambda x: dataset.get_file_timestamp(x['data']))
+               grouper.sid_group(),
+               group_types=['PID', 'SID'],
+               ingroup_sortkey_func=lambda x: dataset.get_file_timestamp(x['data']))
 
     groupby_obj.apply(count_total_rows) \
         .post_join(join_func=sum_rows) \

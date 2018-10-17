@@ -128,7 +128,7 @@ class GroupBy:
                 self._groups[group_name].sort(
                     key=ingroup_sortkey_func, reverse=descending)
 
-    def split(self, *groups, ingroup_sortkey_func=None, descending=False):
+    def split(self, *groups, group_types=None, ingroup_sortkey_func=None, descending=False):
         """
 
         Group input by list of groups. Length should match the length of input
@@ -146,6 +146,8 @@ class GroupBy:
 
         self._groups_in_apply = copy.deepcopy(self._groups)
 
+        self._group_types = group_types
+
         return self
 
     def post_join(self, join_func=None):
@@ -156,7 +158,7 @@ class GroupBy:
         return self
 
     def final_join(self, join_func=None):
-        self._joined_applied_groups = join_func(self._groups_in_apply)
+        self._joined_applied_groups = join_func(self._groups_in_apply, self._group_types)
         return self
 
     def compute_intermediate(self, **kwargs):
