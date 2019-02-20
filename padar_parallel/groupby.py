@@ -31,8 +31,9 @@ class GroupBy:
     @staticmethod
     def get_group_data(group):
         new_group_items = copy.deepcopy(group)
-        new_group_items = [group_item['data']
-                           for group_item in new_group_items]
+        new_group_items = [
+            group_item['data'] for group_item in new_group_items
+        ]
         return new_group_items
 
     @staticmethod
@@ -77,9 +78,7 @@ class GroupBy:
 
     @staticmethod
     def bundle(data, **metas):
-        bundle = {
-            'data': data
-        }
+        bundle = {'data': data}
         for meta_name in metas:
             bundle[meta_name] = metas[meta_name]
         return bundle
@@ -90,17 +89,15 @@ class GroupBy:
         before_item = GroupBy.bundle(
             None) if before_index < 0 else group[before_index]
         after_index = group_item['index'] + 1
-        after_item = GroupBy.bundle(None) if after_index >= len(
-            group) else group[after_index]
+        after_item = GroupBy.bundle(
+            None) if after_index >= len(group) else group[after_index]
         return before_item, after_item
 
     def _bundle_input(self):
         metas = self._meta_infos
         self._bundle_inputs = []
         for index, data in enumerate(self._data_inputs):
-            bundle = {
-                'data': data
-            }
+            bundle = {'data': data}
             for meta_name in metas:
                 bundle[meta_name] = metas[meta_name][index]
             self._bundle_inputs.append(bundle)
@@ -128,7 +125,11 @@ class GroupBy:
                 self._groups[group_name].sort(
                     key=ingroup_sortkey_func, reverse=descending)
 
-    def split(self, *groups, group_types=None, ingroup_sortkey_func=None, descending=False):
+    def split(self,
+              *groups,
+              group_types=None,
+              ingroup_sortkey_func=None,
+              descending=False):
         """
 
         Group input by list of groups. Length should match the length of input
@@ -154,16 +155,21 @@ class GroupBy:
         for group_name in self._groups_in_apply:
             if join_func is not None:
                 self._groups_in_apply[group_name] = [
-                    join_func(self._groups_in_apply[group_name])]
+                    join_func(self._groups_in_apply[group_name])
+                ]
         return self
 
     def final_join(self, join_func=None):
-        self._joined_applied_groups = join_func(self._groups_in_apply, self._group_types)
+        if join_func is None:
+            self._joined_applied_groups = self._groups_in_apply
+        else:
+            self._joined_applied_groups = join_func(self._groups_in_apply,
+                                                    self._group_types)
         return self
 
     def compute_intermediate(self, **kwargs):
-        self._groups_in_apply = dask.compute(
-            self._groups_in_apply, **kwargs)[0]
+        self._groups_in_apply = dask.compute(self._groups_in_apply,
+                                             **kwargs)[0]
         return self
 
     def compute(self, profiling=True, **kwargs):
@@ -171,11 +177,11 @@ class GroupBy:
             with Profiler() as self._prof, \
                     ResourceProfiler(dt=0.25) as self._rprof, \
                     CacheProfiler() as self._cprof:
-                self._result = dask.compute(
-                    self._joined_applied_groups, **kwargs)[0]
+                self._result = dask.compute(self._joined_applied_groups,
+                                            **kwargs)[0]
         else:
-            self._result = dask.compute(
-                self._joined_applied_groups, **kwargs)[0]
+            self._result = dask.compute(self._joined_applied_groups,
+                                        **kwargs)[0]
         return self
 
     def show_profiling(self, **kwargs):
@@ -209,8 +215,8 @@ class GroupBy:
             for index, group_item in \
                     enumerate(self._groups_in_apply[group_name]):
                 group_item['index'] = index
-                result = func(
-                    group_item, self._groups_in_apply[group_name], **kwargs)
+                result = func(group_item, self._groups_in_apply[group_name],
+                              **kwargs)
                 results.append(result)
             self._groups_in_apply[group_name] = results
         return self
@@ -219,8 +225,8 @@ class GroupBy:
 class GroupByWindowing(GroupBy):
     def __init__(self, *data_inputs, left_boundary, right_boundary):
         super(GroupByWindowing, self).__init__(*data_inputs)
-        self._data_inputs = zip(
-            self._data_inputs, left_boundary, right_boundary)
+        self._data_inputs = zip(self._data_inputs, left_boundary,
+                                right_boundary)
 
     def split_by_windowing(self, windowing_func, interval, step):
         def apply_windowing_func(data):
@@ -230,14 +236,16 @@ class GroupByWindowing(GroupBy):
             stop_windows = stop_windows
             results = []
             for start_window, stop_window in zip(start_windows, stop_windows):
-                chunk_result = windowing_func(
-                    data[0], start_window, stop_window)
+                chunk_result = windowing_func(data[0], start_window,
+                                              stop_window)
                 results.append((chunk_result, start_window, stop_window))
             return results
+
         for group_name in self._groups:
-            self._groups_in_apply[group_name] = [apply_windowing_func(
-                group_item)
-                for group_item in self._groups_in_apply[group_name]]
+            self._groups_in_apply[group_name] = [
+                apply_windowing_func(group_item)
+                for group_item in self._groups_in_apply[group_name]
+            ]
             self._groups_in_apply[group_name] = list(
                 reduce((lambda a, b: a + b),
                        self._groups_in_apply[group_name]))
@@ -264,8 +272,9 @@ class GroupByWindowing(GroupBy):
         """
 
         for group_name in self._groups:
-            self._groups_in_apply[group_name] = [(func(
-                group_item, self._groups[group_name], **kwargs),
-                group_item[1], group_item[2])
-                for group_item in self._groups_in_apply[group_name]]
+            self._groups_in_apply[group_name] = [
+                (func(group_item, self._groups[group_name], **kwargs),
+                 group_item[1], group_item[2])
+                for group_item in self._groups_in_apply[group_name]
+            ]
         return self

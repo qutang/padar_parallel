@@ -12,7 +12,8 @@ class MhealthWindowing:
         grouper = MHealthGrouper(inputs)
         return {
             'left_boundary': grouper.session_start_time(),
-            'right_boundary': grouper.session_stop_time()
+            'right_boundary': grouper.session_stop_time(),
+            'original_path': grouper._data_inputs
         }
 
     def get_segment_func(file_type):
@@ -58,12 +59,14 @@ class MhealthWindowing:
                     original_data, file_type)
 
                 appended_data = dataframe.append_edges(
-                    original_data, before_df=before_data, after_df=None,
+                    original_data,
+                    before_df=before_data,
+                    after_df=None,
                     duration=interval * 5)
 
                 start_windows, stop_windows = MhealthWindowing.get_segment_windows(
-                    data['left_boundary'], data['right_boundary'],
-                    interval, step)
+                    data['left_boundary'], data['right_boundary'], interval,
+                    step)
 
                 rest_metas = GroupBy.get_meta(data)
 
@@ -75,18 +78,24 @@ class MhealthWindowing:
                             stop_window >= original_et:
                         continue
 
-                    chunk_result = segment_func(
-                        appended_data, start_window, stop_window)
+                    chunk_result = segment_func(appended_data, start_window,
+                                                stop_window)
 
-                    result = func(chunk_result, interval=interval, step=step, **rest_metas, **kwargs)
+                    result = func(
+                        chunk_result,
+                        interval=interval,
+                        step=step,
+                        **rest_metas,
+                        **kwargs)
 
-                    result = dataframe.append_times(
-                        result, start_window, stop_window)
+                    result = dataframe.append_times(result, start_window,
+                                                    stop_window)
 
                     results.append(result)
                 return GroupBy.bundle(pd.concat(results))
 
             return groupby_windowing_func
+
         return wrapper
 
     @staticmethod
@@ -95,9 +104,14 @@ class MhealthWindowing:
         load_func = MhealthWindowing.get_load_func(file_type)
 
         def wrapper(func):
-            def script_windowing_func(file, *,
-                                      before_file=None, lbound, rbound,
-                                      interval, step, **kwargs):
+            def script_windowing_func(file,
+                                      *,
+                                      before_file=None,
+                                      lbound,
+                                      rbound,
+                                      interval,
+                                      step,
+                                      **kwargs):
 
                 original_data = load_func(file)
                 before_data = load_func(before_file)
@@ -106,7 +120,9 @@ class MhealthWindowing:
                     original_data, file_type)
 
                 appended_data = dataframe.append_edges(
-                    original_data, before_df=before_data, duration=interval * 5)
+                    original_data,
+                    before_df=before_data,
+                    duration=interval * 5)
 
                 start_windows, stop_windows = MhealthWindowing.get_segment_windows(
                     lbound, rbound, interval, step)
@@ -119,16 +135,17 @@ class MhealthWindowing:
                             stop_window >= original_et:
                         continue
 
-                    chunk_result = segment_func(
-                        appended_data, start_window, stop_window)
+                    chunk_result = segment_func(appended_data, start_window,
+                                                stop_window)
 
                     result = func(chunk_result, **kwargs)
 
-                    result = dataframe.append_times(
-                        result, start_window, stop_window)
+                    result = dataframe.append_times(result, start_window,
+                                                    stop_window)
 
                     results.append(result)
                 return pd.concat(results)
 
             return script_windowing_func
+
         return wrapper
